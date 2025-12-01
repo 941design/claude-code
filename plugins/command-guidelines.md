@@ -4,34 +4,78 @@ Use these practices to craft clear, actionable command workflows consistent with
 
 ## Frontmatter Checklist
 - **description**: One-line purpose of the command.
-  > Example: `feature-dev` states “Guided feature development with codebase understanding and architecture focus” in its frontmatter. ([plugins/feature-dev/commands/feature-dev.md#L1-L3](plugins/feature-dev/commands/feature-dev.md#L1-L3))
+  > description: Guided feature development with codebase understanding and architecture focus ([plugins/feature-dev/commands/feature-dev.md#L2-L2](plugins/feature-dev/commands/feature-dev.md#L2-L2))
 - **argument-hint**: Brief cue for optional arguments or expected input format.
-  > Example: `feature-dev` adds `argument-hint: Optional feature description` to signal optional input. ([plugins/feature-dev/commands/feature-dev.md#L1-L4](plugins/feature-dev/commands/feature-dev.md#L1-L4))
+  > argument-hint: Optional feature description ([plugins/feature-dev/commands/feature-dev.md#L3-L3](plugins/feature-dev/commands/feature-dev.md#L3-L3))
 - **allowed-tools**: Explicit list of permitted tools (e.g., `Bash`, `Glob`, `Task`, `Read`). Include command-specific constraints like `Bash(git commit:*)` when needed.
-  > Example: `commit-push-pr` restricts Bash usage to specific git/gh subcommands for a tight workflow. ([plugins/commit-commands/commands/commit-push-pr.md#L1-L3](plugins/commit-commands/commands/commit-push-pr.md#L1-L3))
+  > allowed-tools: Bash(git checkout --branch:*), Bash(git add:*), Bash(git status:*), Bash(git push:*), Bash(git commit:*), Bash(gh pr create:*) ([plugins/commit-commands/commands/commit-push-pr.md#L2-L2](plugins/commit-commands/commands/commit-push-pr.md#L2-L2))
 - Optional fields such as `disable-model-invocation` should be set deliberately when tool-only behavior is required.
-  > Example: `code-review` sets `disable-model-invocation: false` to explicitly allow agent calls while remaining tool-centric. ([plugins/code-review/commands/code-review.md#L1-L5](plugins/code-review/commands/code-review.md#L1-L5))
+  > disable-model-invocation: false ([plugins/code-review/commands/code-review.md#L5-L5](plugins/code-review/commands/code-review.md#L5-L5))
 
 ## Provide Context Up Front
 - Start with sections like **Context** or **Goal** to anchor the workflow.
-  > Example: `commit-push-pr` opens with a “Context” section listing repo state before instructions. ([plugins/commit-commands/commands/commit-push-pr.md#L6-L11](plugins/commit-commands/commands/commit-push-pr.md#L6-L11))
+  > ## Context
+  > 
+  > - Current git status: !`git status`
+  > - Current git diff (staged and unstaged changes): !`git diff HEAD`
+  > - Current branch: !`git branch --show-current` ([plugins/commit-commands/commands/commit-push-pr.md#L8-L12](plugins/commit-commands/commands/commit-push-pr.md#L8-L12))
 - Surface auto-fetched state (git status, diff, branch) so the user sees what the command will act on.
-  > Example: The same command inlines `git status`, `git diff`, and branch name for immediate visibility. ([plugins/commit-commands/commands/commit-push-pr.md#L6-L11](plugins/commit-commands/commands/commit-push-pr.md#L6-L11))
+  > - Current git status: !`git status`
+  > - Current git diff (staged and unstaged changes): !`git diff HEAD`
+  > - Current branch: !`git branch --show-current` ([plugins/commit-commands/commands/commit-push-pr.md#L9-L12](plugins/commit-commands/commands/commit-push-pr.md#L9-L12))
 - Clarify the expected outcome and any non-negotiable constraints (e.g., “create a single git commit and do nothing else”).
-  > Example: `commit-push-pr` mandates performing commit, push, and PR creation in a single message without extra text. ([plugins/commit-commands/commands/commit-push-pr.md#L16-L20](plugins/commit-commands/commands/commit-push-pr.md#L16-L20))
+  > 5. You have the capability to call multiple tools in a single response. You MUST do all of the above in a single message. Do not use any other tools or do anything else. Do not send any other text or messages besides these tool calls. ([plugins/commit-commands/commands/commit-push-pr.md#L18-L20](plugins/commit-commands/commands/commit-push-pr.md#L18-L20))
 
 ## Structure the Workflow
 Break the body into digestible phases with headings and checklists:
 - **Discovery/Scope**: Identify files, feature scope, or PR eligibility before acting.
-  > Example: `review-pr` starts with determining review scope and applicable aspects before launching analyses. ([plugins/pr-review-toolkit/commands/review-pr.md#L15-L29](plugins/pr-review-toolkit/commands/review-pr.md#L15-L29))
+  > 1. **Determine Review Scope**
+  >    - Read the PR diff: !`gh pr diff`
+  >    - Identify files changed and their types ([plugins/pr-review-toolkit/commands/review-pr.md#L14-L18](plugins/pr-review-toolkit/commands/review-pr.md#L14-L18))
 - **Planning**: Encourage clarifying questions and todo lists for underspecified tasks.
-  > Example: `feature-dev` Phase 1 asks targeted questions to clarify the feature before proceeding. ([plugins/feature-dev/commands/feature-dev.md#L20-L33](plugins/feature-dev/commands/feature-dev.md#L20-L33))
+  > **Actions**:
+  > 1. Create todo list with all phases
+  > 2. If feature unclear, ask user for:
+  >    - What problem are they solving?
+  >    - What should the feature do?
+  >    - Any constraints or requirements?
+  > 3. Summarize understanding and confirm with user ([plugins/feature-dev/commands/feature-dev.md#L26-L35](plugins/feature-dev/commands/feature-dev.md#L26-L35))
 - **Execution Steps**: Numbered instructions that align with available tools; note when to run agents in parallel vs. sequentially.
-  > Example: `review-pr` enumerates launch steps and offers sequential vs. parallel approaches for agent runs. ([plugins/pr-review-toolkit/commands/review-pr.md#L30-L57](plugins/pr-review-toolkit/commands/review-pr.md#L30-L57))
+  > 5. **Launch Review Agents**
+  > 
+  >    **Sequential approach** (one at a time):
+  >    - Easier to understand and act on
+  >    - Each report is complete before next
+  >    - Good for interactive review
+  > 
+  >    **Parallel approach** (user can request):
+  >    - Launch all agents simultaneously
+  >    - Faster for comprehensive review
+  >    - Results come back together ([plugins/pr-review-toolkit/commands/review-pr.md#L40-L57](plugins/pr-review-toolkit/commands/review-pr.md#L40-L57))
 - **Quality/Review**: Integrate specialized agents or follow-up checks (e.g., architecture review, test analysis) with confidence filtering.
-  > Example: `feature-dev` Phase 6 orchestrates multiple code-reviewer agents and consolidates findings by severity. ([plugins/feature-dev/commands/feature-dev.md#L101-L110](plugins/feature-dev/commands/feature-dev.md#L101-L110))
+  > 1. Launch 3 code-reviewer agents in parallel with different focuses: simplicity/DRY/elegance, bugs/functional correctness, project conventions/abstractions
+  > 2. Consolidate findings and identify highest severity issues that you recommend fixing
+  > 3. **Present findings to user and ask what they want to do** (fix now, fix later, or proceed as-is) ([plugins/feature-dev/commands/feature-dev.md#L105-L111](plugins/feature-dev/commands/feature-dev.md#L105-L111))
 - **Summary/Output**: Specify exact output format or comment template to ensure consistent results.
-  > Example: `review-pr` provides a templated “PR Review Summary” markdown block for aggregating issues. ([plugins/pr-review-toolkit/commands/review-pr.md#L65-L88](plugins/pr-review-toolkit/commands/review-pr.md#L65-L88))
+  > # PR Review Summary
+  > 
+  > ## Critical Issues
+  > - ...
+  > 
+  > ## Important Issues
+  > - ...
+  > 
+  > ## Suggestions
+  > - ...
+  > 
+  > ## Strengths
+  > - What's well-done in this PR
+  > 
+  > ## Recommended Action
+  > 1. Fix critical issues first
+  > 2. Address important issues
+  > 3. Consider suggestions
+  > 4. Re-run review after fixes ([plugins/pr-review-toolkit/commands/review-pr.md#L65-L88](plugins/pr-review-toolkit/commands/review-pr.md#L65-L88))
 
 ### Example Flow Skeleton
 ```markdown
@@ -56,22 +100,44 @@ Break the body into digestible phases with headings and checklists:
 
 ## Usage Examples and Tips
 - Provide concrete invocation examples (full run, scoped aspects, parallel mode) to guide users.
-  > Example: `review-pr` lists default, aspect-specific, and parallel invocation examples in its usage section. ([plugins/pr-review-toolkit/commands/review-pr.md#L90-L113](plugins/pr-review-toolkit/commands/review-pr.md#L90-L113))
+  > /pr-review-toolkit:review-pr
+  > 
+  > /pr-review-toolkit:review-pr "tests"
+  > 
+  > /pr-review-toolkit:review-pr "parallel" ([plugins/pr-review-toolkit/commands/review-pr.md#L90-L113](plugins/pr-review-toolkit/commands/review-pr.md#L90-L113))
 - Include tips for when to run the command (early in development, before PRs, after feedback).
-  > Example: `review-pr` includes “Tips” and “Workflow Integration” timing guidance (before committing, before PR, after feedback). ([plugins/pr-review-toolkit/commands/review-pr.md#L148-L181](plugins/pr-review-toolkit/commands/review-pr.md#L148-L181))
+  > **Before committing**: Catch issues early in your workflow
+  > **Before PR**: Validate changes before requesting review
+  > **After feedback**: Verify fixes before re-requesting review ([plugins/pr-review-toolkit/commands/review-pr.md#L148-L155](plugins/pr-review-toolkit/commands/review-pr.md#L148-L155))
 - Offer templates for final comments or reports with required links, headings, and citation expectations.
-  > Example: `code-review` supplies an explicit PR comment format including sha-linked references. ([plugins/code-review/commands/code-review.md#L50-L92](plugins/code-review/commands/code-review.md#L50-L92))
+  > ```markdown
+  > [Status] Review of {pr-url}
+  > 
+  > Summary: [overall impression + risk assessment]
+  > 
+  > Issues:
+  > - [markdown link to file/line: description]
+  > - ...
+  > 
+  > Good Stuff:
+  > - [positive note]
+  > - ...
+  > ``` ([plugins/code-review/commands/code-review.md#L50-L67](plugins/code-review/commands/code-review.md#L50-L67))
 
 ## Tooling Discipline
 - Map each instruction to allowed tools—avoid suggesting actions the command cannot perform.
-  > Example: `review-pr` aligns its steps with `Bash`, `Read`, and agent launches listed in `allowed-tools`. ([plugins/pr-review-toolkit/commands/review-pr.md#L4-L44](plugins/pr-review-toolkit/commands/review-pr.md#L4-L44))
+  > allowed-tools: ["Bash", "Glob", "Grep", "Read", "Task"] ([plugins/pr-review-toolkit/commands/review-pr.md#L4-L4](plugins/pr-review-toolkit/commands/review-pr.md#L4-L4))
 - When restricting behavior, state it explicitly (e.g., “stage and commit in one message; do not send other text”).
-  > Example: `commit-push-pr` forbids extra output and requires all tool calls in a single message. ([plugins/commit-commands/commands/commit-push-pr.md#L16-L20](plugins/commit-commands/commands/commit-push-pr.md#L16-L20))
+  > You must do all 5 commands at once, in a single message, using *only* the five tool calls above. Do not send a separate confirmation message after the tool calls. ([plugins/commit-commands/commands/commit-push-pr.md#L21-L21](plugins/commit-commands/commands/commit-push-pr.md#L21-L21))
 - Encourage safe defaults: read before writing, avoid unnecessary builds, respect repository conventions.
-  > Example: `code-review` forbids running builds and leans on `gh` for read-only interactions unless posting the final comment. ([plugins/code-review/commands/code-review.md#L44-L48](plugins/code-review/commands/code-review.md#L44-L48))
+  > You should not run the build. ([plugins/code-review/commands/code-review.md#L44-L44](plugins/code-review/commands/code-review.md#L44-L44))
 
 ## Encourage Iteration
 - Advise rerunning commands after fixes or new context.
-  > Example: `review-pr` tells users to re-run reviews after addressing critical items. ([plugins/pr-review-toolkit/commands/review-pr.md#L83-L88](plugins/pr-review-toolkit/commands/review-pr.md#L83-L88))
+  > 4. Re-run review after fixes ([plugins/pr-review-toolkit/commands/review-pr.md#L87-L88](plugins/pr-review-toolkit/commands/review-pr.md#L87-L88))
 - Recommend addressing critical issues first, then important ones, and noting positives to keep feedback balanced.
-  > Example: `review-pr` orders recommended actions from critical fixes through suggestions and encourages calling out strengths. ([plugins/pr-review-toolkit/commands/review-pr.md#L65-L87](plugins/pr-review-toolkit/commands/review-pr.md#L65-L87))
+  > ## Recommended Action
+  > 1. Fix critical issues first
+  > 2. Address important issues
+  > 3. Consider suggestions
+  > 4. Re-run review after fixes ([plugins/pr-review-toolkit/commands/review-pr.md#L83-L88](plugins/pr-review-toolkit/commands/review-pr.md#L83-L88))

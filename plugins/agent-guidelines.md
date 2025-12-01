@@ -4,30 +4,76 @@ This guide captures common practices used across the existing agent definitions 
 
 ## Frontmatter Essentials
 - **Name and description**: Use a concise, kebab-case `name` and a descriptive `description` that explains when to trigger the agent. Include proactive trigger cues and brief scenarios where helpful.
-  > Example: The `plugin-validator` frontmatter pairs a precise name with triggers like “validate my plugin” to guide invocation. ([plugins/plugin-dev/agents/plugin-validator.md#L2-L32](plugins/plugin-dev/agents/plugin-validator.md#L2-L32))
+  > name: plugin-validator
+  > description: Use this agent when the user asks to "validate my plugin", "check plugin structure", "verify plugin is correct", "validate plugin.json", "check plugin files", or mentions plugin validation. Also trigger proactively after user creates or modifies plugin components. Examples:
+  > 
+  > <example>
+  > Context: User finished creating a new plugin
+  > user: "I've created my first plugin with commands and hooks"
+  > assistant: "Great! Let me validate the plugin structure." ([plugins/plugin-dev/agents/plugin-validator.md#L2-L16](plugins/plugin-dev/agents/plugin-validator.md#L2-L16))
 - **Model and color**: Specify an appropriate `model` (inherit/haiku/sonnet/opus) and UI `color` to signal importance and persona.
-  > Example: `code-architect` sets `model: sonnet` and `color: green` to convey depth and emphasis. ([plugins/feature-dev/agents/code-architect.md#L4-L6](plugins/feature-dev/agents/code-architect.md#L4-L6))
+  > model: sonnet
+  > color: green ([plugins/feature-dev/agents/code-architect.md#L5-L6](plugins/feature-dev/agents/code-architect.md#L5-L6))
 - **Tools**: Declare the exact tools the agent relies on. Prefer explicit lists (e.g., `Read`, `Glob`, `Grep`, `Task`, `Bash`) that match the workflow you describe.
-  > Example: `code-architect` lists discovery-heavy tools (`Glob`, `Grep`, `Read`, etc.) that align with its analysis mandate. ([plugins/feature-dev/agents/code-architect.md#L4-L4](plugins/feature-dev/agents/code-architect.md#L4-L4))
+  > tools: Glob, Grep, LS, Read, NotebookRead, WebFetch, TodoWrite, WebSearch, KillShell, BashOutput ([plugins/feature-dev/agents/code-architect.md#L4-L4](plugins/feature-dev/agents/code-architect.md#L4-L4))
 - **Examples**: Add `<example>` blocks that show realistic invocations and commentary explaining why the agent is appropriate for each case.
-  > Example: `plugin-validator` includes multiple contextual `<example>` blocks that spell out when to run the agent. ([plugins/plugin-dev/agents/plugin-validator.md#L5-L32](plugins/plugin-dev/agents/plugin-validator.md#L5-L32))
+  > <example>
+  > Context: User explicitly requests validation
+  > user: "Validate my plugin before I publish it"
+  > assistant: "I'll use the plugin-validator agent to perform comprehensive validation."
+  > <commentary>
+  > Explicit validation request triggers the agent.
+  > </commentary>
+  > </example> ([plugins/plugin-dev/agents/plugin-validator.md#L17-L26](plugins/plugin-dev/agents/plugin-validator.md#L17-L26))
 
 ## Define a Clear Mission
 - Open with a sentence that states the agent’s specialization (e.g., “expert code analyst,” “plugin validator,” “SDK verifier”).
-  > Example: `code-architect` opens with “You are a senior software architect…” to anchor its role. ([plugins/feature-dev/agents/code-architect.md#L9-L10](plugins/feature-dev/agents/code-architect.md#L9-L10))
+  > You are a senior software architect who delivers comprehensive, actionable architecture blueprints by deeply understanding codebases and making confident architectural decisions. ([plugins/feature-dev/agents/code-architect.md#L9-L10](plugins/feature-dev/agents/code-architect.md#L9-L10))
 - Clarify primary goals and boundaries up front. Call out what the agent should **not** focus on to prevent scope creep.
-  > Example: `agent-sdk-verifier-py` dedicates a “What NOT to Focus On” section to exclude style nitpicks from its remit. ([plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L73-L79](plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L73-L79))
+  > ## What NOT to Focus On
+  > 
+  > - General code style preferences (PEP 8 formatting, naming conventions, etc.)
+  > - Python-specific style choices (snake_case vs camelCase debates)
+  > - Import ordering preferences
+  > - General Python best practices unrelated to SDK usage ([plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L71-L79](plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L71-L79))
 
 ## Structure the Workflow
 Organize guidance into explicit sections that mirror how the agent should operate:
 - **Focus areas or responsibilities**: List core duties (e.g., “architecture analysis,” “SDK usage validation,” “error-handling review”).
-  > Example: `plugin-validator` enumerates responsibilities like manifest checks and security validation up front. ([plugins/plugin-dev/agents/plugin-validator.md#L41-L47](plugins/plugin-dev/agents/plugin-validator.md#L41-L47))
+  > **Your Core Responsibilities:**
+  > 1. Validate plugin structure and organization
+  > 2. Check plugin.json manifest for correctness
+  > 3. Validate all component files (commands, agents, skills, hooks)
+  > 4. Verify naming conventions and file organization
+  > 5. Check for common issues and anti-patterns
+  > 6. Provide specific, actionable recommendations ([plugins/plugin-dev/agents/plugin-validator.md#L36-L43](plugins/plugin-dev/agents/plugin-validator.md#L36-L43))
 - **Step-by-step process**: Provide a numbered flow the agent should follow (discovery → analysis → reporting). Include when to consult docs or external references.
-  > Example: `agent-sdk-verifier-py` walks through verification steps, including referencing SDK docs via WebFetch. ([plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L80-L105](plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L80-L105))
+  > 2. **Check SDK Documentation Adherence**:
+  > 
+  >    - Use WebFetch to reference the official Python SDK docs: https://docs.claude.com/en/api/agent-sdk/python
+  >    - Compare the implementation against official patterns and recommendations
+  >    - Note any deviations from documented best practices ([plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L86-L92](plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L86-L92))
 - **Input scope defaults**: State what to review by default (e.g., unstaged git diff) and how users can override the scope.
-  > Example: `plugin-validator` defaults to locating `.claude-plugin/plugin.json` and scanning discovered directories before deeper checks. ([plugins/plugin-dev/agents/plugin-validator.md#L51-L75](plugins/plugin-dev/agents/plugin-validator.md#L51-L75))
+  > 1. **Locate Plugin Root**:
+  >    - Check for `.claude-plugin/plugin.json`
+  >    - Verify plugin directory structure
+  >    - Note plugin location (project vs marketplace) ([plugins/plugin-dev/agents/plugin-validator.md#L49-L54](plugins/plugin-dev/agents/plugin-validator.md#L49-L54))
 - **Parallel/serial behavior**: If the agent launches other agents or tools, note when to do so in sequence vs. parallel and how to consolidate results.
-  > Example: The PR code reviewer coordinates sequential eligibility checks and parallel review agents before aggregation. ([plugins/pr-review-toolkit/agents/code-reviewer.md#L16-L38](plugins/pr-review-toolkit/agents/code-reviewer.md#L16-L38))
+  > **Sequential approach** (one at a time):
+  > - Easier to understand and act on
+  > - Each report is complete before next
+  > - Good for interactive review
+  > 
+  > **Parallel approach** (user can request):
+  > - Launch all agents simultaneously
+  > - Faster for comprehensive review
+  > - Results come back together
+  > 
+  > After agents complete, summarize:
+  > - **Critical Issues** (must fix before merge)
+  > - **Important Issues** (should fix)
+  > - **Suggestions** (nice to have)
+  > - **Positive Observations** (what's good) ([plugins/pr-review-toolkit/commands/review-pr.md#L40-L64](plugins/pr-review-toolkit/commands/review-pr.md#L40-L64))
 
 ### Example Workflow Skeleton
 ```markdown
@@ -51,24 +97,50 @@ You are an expert <specialty>.
 
 ## Emphasize Actionable Outputs
 - Require file and line references for observations.
-  > Example: `plugin-validator`’s quality standards insist on file-scoped errors with specific paths. ([plugins/plugin-dev/agents/plugin-validator.md#L136-L139](plugins/plugin-dev/agents/plugin-validator.md#L136-L139))
+  > **Quality Standards:**
+  > - All validation errors include file path and specific issue
+  > - Warnings distinguished from errors ([plugins/plugin-dev/agents/plugin-validator.md#L135-L139](plugins/plugin-dev/agents/plugin-validator.md#L135-L139))
 - Group issues by severity and filter out low-confidence findings. Include a confidence rubric when false positives are a concern.
-  > Example: The PR `code-reviewer` agents score findings and drop issues below a confidence threshold. ([plugins/code-review/commands/code-review.md#L20-L27](plugins/code-review/commands/code-review.md#L20-L27))
+  > **Issue Confidence Scoring**
+  > 
+  > Rate each issue from 0-100:
+  > 
+  > - **0-25**: Likely false positive or pre-existing issue
+  > - **26-50**: Minor nitpick not explicitly in CLAUDE.md
+  > - **51-75**: Valid but low-impact issue
+  > - **76-90**: Important issue requiring attention
+  > - **91-100**: Critical bug or explicit CLAUDE.md violation
+  > 
+  > **Only report issues with confidence ≥ 80** ([plugins/pr-review-toolkit/agents/code-reviewer.md#L33-L47](plugins/pr-review-toolkit/agents/code-reviewer.md#L33-L47))
 - Provide concrete fix suggestions and highlight positives, not just problems.
-  > Example: `plugin-validator` pairs recommendations with fix suggestions and positive findings sections. ([plugins/plugin-dev/agents/plugin-validator.md#L137-L169](plugins/plugin-dev/agents/plugin-validator.md#L137-L169))
+  > ### Positive Findings
+  > - [What's done well]
+  > 
+  > ### Recommendations
+  > 1. [Priority recommendation]
+  > 2. [Additional recommendation] ([plugins/plugin-dev/agents/plugin-validator.md#L159-L171](plugins/plugin-dev/agents/plugin-validator.md#L159-L171))
 - Use consistent headings (“Summary,” “Critical Issues,” “Warnings,” “Positive Findings,” “Recommendations”) to make reports skimmable.
-  > Example: `code-architect`’s output guidance breaks deliverables into labeled sections like “Patterns & Conventions Found” and “Build Sequence.” ([plugins/feature-dev/agents/code-architect.md#L24-L32](plugins/feature-dev/agents/code-architect.md#L24-L32))
+  > - **Patterns & Conventions Found**: Existing patterns with file:line references, similar features, key abstractions
+  > - **Architecture Decision**: Your chosen approach with rationale and trade-offs
+  > - **Component Design**: Each component with file path, responsibilities, dependencies, and interfaces
+  > - **Implementation Map**: Specific files to create/modify with detailed change descriptions
+  > - **Data Flow**: Complete flow from entry points through transformations to outputs
+  > - **Build Sequence**: Phased implementation steps as a checklist ([plugins/feature-dev/agents/code-architect.md#L24-L31](plugins/feature-dev/agents/code-architect.md#L24-L31))
 
 ## Tooling and Safety
 - Instruct agents to consult authoritative sources (e.g., official docs) when validating specialized work.
-  > Example: `agent-sdk-verifier-py` explicitly references official SDK documentation for comparisons. ([plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L89-L93](plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L89-L93))
+  > - Use WebFetch to reference the official Python SDK docs: https://docs.claude.com/en/api/agent-sdk/python
+  > - Compare the implementation against official patterns and recommendations ([plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L86-L92](plugins/agent-sdk-dev/agents/agent-sdk-verifier-py.md#L86-L92))
 - Specify security checks (no secrets, safe URLs) when relevant.
-  > Example: `plugin-validator`’s security checks flag hardcoded credentials and enforce HTTPS/WSS MCP URLs. ([plugins/plugin-dev/agents/plugin-validator.md#L130-L134](plugins/plugin-dev/agents/plugin-validator.md#L130-L134))
+  > 10. **Security Checks**:
+  >     - No hardcoded credentials in any files
+  >     - MCP servers use HTTPS/WSS not HTTP/WS
+  >     - Hooks don't have obvious security issues ([plugins/plugin-dev/agents/plugin-validator.md#L126-L134](plugins/plugin-dev/agents/plugin-validator.md#L126-L134))
 - Encourage idempotent reads first; avoid destructive actions unless absolutely required.
-  > Example: `conversation-analyzer` relies solely on `Read`/`Grep` for analysis without making modifications. ([plugins/hookify/agents/conversation-analyzer.md#L2-L7](plugins/hookify/agents/conversation-analyzer.md#L2-L7))
+  > tools: ["Read", "Grep"] ([plugins/hookify/agents/conversation-analyzer.md#L6-L6](plugins/hookify/agents/conversation-analyzer.md#L6-L6))
 
 ## Encourage Repeatability
 - Default to reviewing current or recent changes (e.g., `git diff`) so results stay relevant.
-  > Example: PR review agents assume git diff context when selecting files to analyze. ([plugins/pr-review-toolkit/agents/code-reviewer.md#L26-L32](plugins/pr-review-toolkit/agents/code-reviewer.md#L26-L32))
+  > By default, review unstaged changes from `git diff`. The user may specify different files or scope to review. ([plugins/pr-review-toolkit/agents/code-reviewer.md#L17-L32](plugins/pr-review-toolkit/agents/code-reviewer.md#L17-L32))
 - Remind users to rerun agents after fixes, and to state the scope if it differs from the default.
-  > Example: The PR review workflow advises re-running reviews after addressing issues. ([plugins/pr-review-toolkit/commands/review-pr.md#L83-L88](plugins/pr-review-toolkit/commands/review-pr.md#L83-L88))
+  > 4. Re-run review after fixes ([plugins/pr-review-toolkit/commands/review-pr.md#L87-L88](plugins/pr-review-toolkit/commands/review-pr.md#L87-L88))
